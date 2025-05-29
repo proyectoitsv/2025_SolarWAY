@@ -1,0 +1,13 @@
+flowchart TD
+    A[Inicio] --> B[Instalación de paneles en la cancha]
+    B --> C[Conexión de paneles solares a módulos reguladores de tensión]
+    C --> D[Conexión de módulos a los LEDs]
+    D --> E{¿Es necesario cambiar de cancha?}
+
+    E -- No --> F[Funcionamiento con cancha actual]
+    F --> E
+
+    E -- Sí --> H[Interfaz de control]
+    H --> I[Selección de cancha]
+    I --> J[Envío de comandos a módulos de control de LEDs]
+    J --> E

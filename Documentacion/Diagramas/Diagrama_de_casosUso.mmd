@@ -1,0 +1,31 @@
+%%{init: {'theme': 'default'}}%%
+%%{type: 'uml'}%%
+
+graph TD
+    Usuario((Usuario))
+    App((Aplicación))
+    Controlador((Controlador))
+    Paneles((Paneles Solares))
+    Luces((Luces LED))
+
+    %% Casos de uso
+    elegirCancha[[Seleccionar tipo de cancha]]
+    consultarEnergia[[Consultar energía disponible]]
+    activarLuces[[Activar luces LED]]
+    programarHorarios[[Programar horarios de uso]]
+    notificarFallas[[Notificar fallas]]
+    confirmarActivacion[[Confirmar activación]]
+
+    %% Relaciones
+    Usuario --> App
+    App --> elegirCancha
+    App --> programarHorarios
+    App --> notificarFallas
+    App --> confirmarActivacion
+
+    App --> Controlador
+    Controlador --> consultarEnergia
+    Controlador --> activarLuces
+
+    consultarEnergia --> Paneles
+    activarLuces --> Luces

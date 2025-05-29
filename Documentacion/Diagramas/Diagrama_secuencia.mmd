@@ -1,0 +1,16 @@
+sequenceDiagram
+    actor Usuario
+    participant App
+    participant Controlador
+    participant PanelesSolares
+    participant LucesLED
+
+    Usuario->>App: Abre la aplicación
+    Usuario->>App: Selecciona tipo de cancha
+    App->>Controlador: Enviar tipo de cancha
+    Controlador->>PanelesSolares: Consultar energía disponible
+    PanelesSolares-->>Controlador: Energía suficiente
+    Controlador->>LucesLED: Activar patrón de cancha seleccionada
+    LucesLED-->>Controlador: Confirmación de encendido
+    Controlador-->>App: Confirmación de activación
+    App-->>Usuario: Cancha configurada correctamente
