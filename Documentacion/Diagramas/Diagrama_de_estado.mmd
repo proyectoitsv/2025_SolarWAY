@@ -1,0 +1,27 @@
+---
+config:
+  look: neo
+  theme: redux-dark
+  layout: dagre
+---
+stateDiagram
+  direction TB
+  [*] --> Encendido:Energía detectada
+  Encendido --> Standby:Sistema preparado
+  Standby --> EsperandoInput:Usuario abre la app
+  EsperandoInput --> SeleccionandoModo:Elige tipo de uso
+  SeleccionandoModo --> ProyectandoCancha:Selecciona cancha
+  SeleccionandoModo --> DibujoLibre:Modo dibujo libre
+  ProyectandoCancha --> EnUso:Cancha activa
+  DibujoLibre --> EnUso:Modo libre en uso
+  EnUso --> CambiarCancha:Usuario cambia tipo de cancha
+  CambiarCancha --> ProyectandoCancha
+  EnUso --> Finalizar:Usuario finaliza uso
+  Finalizar --> AlmacenandoEnergia:Almacenamiento de energía restante
+  AlmacenandoEnergia --> [*]
+  Encendido --> Falla:Falla detectada
+  ProyectandoCancha --> Falla
+  DibujoLibre --> Falla
+  EnUso --> Falla
+  Falla --> Diagnostico:Diagnóstico y reparación
+  Diagnostico --> Standby:Reparado, listo nuevamente
