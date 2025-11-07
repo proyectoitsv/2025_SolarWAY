@@ -5,26 +5,27 @@
 // ====================================
 
 // Pines que controlan los transistores (conectan LEDs a GND)
-const int rowPins[] = {13, 12, 14, 27, 26, 25, 33, 32, 35, 34, 39};  // fila1 → fila11
+const int rowPins[] = {13, 12, 14, 27, 26, 25, 33, 32, 5, 16, 17};  // fila1 → fila11
 const int numRows = sizeof(rowPins) / sizeof(rowPins[0]);
 
 // Pines de las columnas (que dan 3.3V a los LEDs)
-const int colPins[] = {4, 2};  // C1 y C2
+const int colPins[] = {15, 2};  // C1 y C2
 const int numCols = sizeof(colPins) / sizeof(colPins[0]);
 
 // Matriz lógica de LEDs (2 columnas × 11 filas = 22 LEDs)
 bool ledMatrix[11][2] = {
-  {0, 0},  // fila1
-  {0, 0},
-  {0, 0},
-  {0, 0},
-  {0, 0},
-  {0, 0},
-  {0, 0},
-  {0, 0},
-  {0, 0},
-  {0, 0},
-  {0, 1}
+  {1, 1},
+  {1, 1},
+  {1, 1},
+  {1, 1},
+  {1, 1},
+  {1, 1},
+  {1, 1},
+  {1, 1},
+  {1, 1},
+  {1, 1},
+  {1, 1}
+  
 };
 
 // ====================================
@@ -57,7 +58,7 @@ void setup() {
   }
 
   // Configurar ADC
-  analogReadResolution(ADC_RESOLUTION);
+ analogReadResolution(ADC_RESOLUTION);
   analogSetAttenuation(ADC_ATTENUATION);
 }
 
@@ -74,7 +75,7 @@ void updateLEDs() {
       digitalWrite(colPins[c], ledMatrix[r][c] ? HIGH : LOW);
     }
 
-    delay(2);  // Persistencia visual
+    delay(1000);  // Persistencia visual
 
     // Apagar todo antes de pasar a la siguiente fila
     for (int c = 0; c < numCols; c++) digitalWrite(colPins[c], LOW);
