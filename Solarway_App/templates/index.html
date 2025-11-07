@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solarway Control</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>SOLARWAY ⚡</h1>
+        <h3>Control del sistema solar inteligente</h3>
+
+        <div class="panel">
+            <p>Energía: <span id="energia">-</span></p>
+            <p>Modo actual: <span id="modo">-</span></p>
+            <p>Fallas: <span id="fallas">-</span></p>
+        </div>
+
+        <div class="buttons">
+            <button onclick="enviarAccion('encender')">Encender luces</button>
+            <button onclick="enviarAccion('apagar')">Apagar luces</button>
+            <button onclick="enviarAccion('cambiar')">Cambiar patrón</button>
+        </div>
+
+        <select id="tipoCancha" onchange="cambiarCancha()">
+            <option value="Handball">Handball</option>
+            <option value="Basquet">Básquet</option>
+            <option value="Voley">Vóley</option>
+        </select>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
