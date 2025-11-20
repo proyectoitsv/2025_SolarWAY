@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Solarway Control</title>
+
+    <link rel="stylesheet" href="/static/style.css">
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+
+    <img src="/static/logo.png" class="logo">
+
+    <div class="panel">
+        <div class="left">
+            <div class="led-grid">
+                {% for row in matrix %}
+                    <div class="row">
+                        {% for col in row %}
+                            <div class="led" 
+                                 data-row="{{ loop.parentloop.index0 }}" 
+                                 data-col="{{ loop.index0 }}">
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="right">
+
+            <h2>Control de LEDs</h2>
+
+            <label>Matricial</label>
+            <input type="text" value="5x8 - 40W" class="input" disabled>
+
+            <label>Seleccionar cancha</label>
+            <div class="buttons">
+                <button class="sport-btn" data-cancha="handball">Handball</button>
+                <button class="sport-btn" data-cancha="voley">Vóley</button>
+                <button class="sport-btn" data-cancha="basquet">Básquet</button>
+            </div>
+
+            <label>Avisos</label>
+            <textarea id="avisos" disabled>No hay avisos</textarea>
+
+            <div class="main-buttons">
+                <button id="btnOn" class="on-btn">Encender Todos</button>
+                <button id="btnOff" class="off-btn">Apagar Todos</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="/static/script.js"></script>
+
+</body>
+</html>
