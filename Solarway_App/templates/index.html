@@ -1,62 +1,66 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Solarway Control</title>
-
-    <link rel="stylesheet" href="/static/style.css">
-
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SolarWay - Panel de Control</title>
+<link rel="stylesheet" href="/static/style.css" />
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"
+integrity="sha384-..." crossorigin="anonymous"></script>
 </head>
 <body>
+<div id="app">
+<header>
+<h1>SolarWay</h1>
+<div id="battery-bar" title="Estado de la batería">
+<div id="battery-level"></div>
+<span id="battery-text"></span>
+</div>
+</header>
 
-<div class="container">
+<main>
+<section id="home" class="screen">
+<h2>Pantalla de inicio</h2>
+<p>Bienvenido al panel de control de SolarWay.</p>
+<div class="tiles">
+<button id="btn-monitor" class="tile">Monitor LEDs</button>
+<button id="btn-courts" class="tile">Seleccionar Patrón</button>
+<button id="btn-alerts" class="tile">Avisos</button>
+</div>
+</section>
 
-    <img src="/static/logo.png" class="logo">
+<section id="monitor" class="screen hidden">
+<h2>Monitor LEDs</h2>
+<div id="led-list" class="led-grid"></div>
+<div class="controls">
+<button id="refresh">Refrescar estado</button>
+</div>
+<button class="back">Volver</button>
+</section>
 
-    <div class="panel">
-        <div class="left">
-            <div class="led-grid">
-                {% for row in matrix %}
-                    <div class="row">
-                        {% for col in row %}
-                            <div class="led" 
-                                 data-row="{{ loop.parentloop.index0 }}" 
-                                 data-col="{{ loop.index0 }}">
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
+<section id="courts" class="screen hidden">
+<h2>Seleccionar Patrón de LEDs</h2>
+<div id="court-list" class="court-grid"></div>
+<h3>Patrón actual</h3>
+<div id="court-preview">
+<img id="court-image" src="" alt="Vista patrón" />
+<p id="court-name"></p>
+</div>
+<button class="back">Volver</button>
+</section>
 
-        <div class="right">
+<section id="alerts" class="screen hidden">
+<h2>Avisos</h2>
+<div id="alerts-list">No hay avisos.</div>
+<button class="back">Volver</button>
+</section>
+</main>
 
-            <h2>Control de LEDs</h2>
-
-            <label>Matricial</label>
-            <input type="text" value="5x8 - 40W" class="input" disabled>
-
-            <label>Seleccionar cancha</label>
-            <div class="buttons">
-                <button class="sport-btn" data-cancha="handball">Handball</button>
-                <button class="sport-btn" data-cancha="voley">Vóley</button>
-                <button class="sport-btn" data-cancha="basquet">Básquet</button>
-            </div>
-
-            <label>Avisos</label>
-            <textarea id="avisos" disabled>No hay avisos</textarea>
-
-            <div class="main-buttons">
-                <button id="btnOn" class="on-btn">Encender Todos</button>
-                <button id="btnOff" class="off-btn">Apagar Todos</button>
-            </div>
-
-        </div>
-    </div>
+<footer>
+<small>SolarWay - Panel de control</small>
+</footer>
 </div>
 
-<script src="/static/script.js"></script>
-
+<script src="/static/app.js"></script>
 </body>
 </html>
