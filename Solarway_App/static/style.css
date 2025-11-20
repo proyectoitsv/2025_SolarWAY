@@ -1,0 +1,123 @@
+/* Paleta de colores */
+:root{
+ --bg: #efefef; 
+ --verde: #2E8B57;
+ --azul: #0A6E8C;
+ --card-bg: #ffffff;
+ --muted: #6b6b6b;
+}
+
+/* Reset y tipografía */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+ margin:0;
+ font-family: "Segoe UI", Roboto, Arial, sans-serif;
+ background: var(--bg);
+ color:#222;
+ display:flex;
+ justify-content:center;
+ padding:18px;
+}
+
+/* Wrapper */
+.wrap{
+ width:100%;
+ max-width:1100px;
+}
+
+/* Header / logo */
+.top{display:flex; justify-content:center; margin-bottom:18px;}
+.logo{ height:72px; object-fit:contain; }
+
+/* Card */
+.card{
+ background: var(--card-bg);
+ border-radius:14px;
+ padding:16px;
+ box-shadow: 0 10px 35px rgba(15,15,15,0.06);
+}
+
+/* Title */
+.controls h1{
+ margin:0 0 14px 0;
+ color:var(--azul);
+ font-size:20px;
+}
+
+/* Layout matrix + side info */
+.matrix-and-info{
+ display:flex;
+ gap:20px;
+ align-items:flex-start;
+ flex-wrap:wrap;
+}
+
+/* Matrix (grid de LEDs) */
+.matrix{
+ display:grid;
+ gap:14px;
+ padding: 12px;
+ background: transparent;
+ border-radius:10px;
+}
+
+/* LED style */
+.led{
+ width:48px;
+ height:48px;
+ border-radius:50%;
+ background:#dcdcdc; /* Gris (apagado por defecto) */
+ border: 2px solid rgba(0,0,0,0.04);
+ cursor:pointer;
+ transition: all 160ms ease;
+ box-shadow: inset 0 -4px 8px rgba(0,0,0,0.06);
+}
+.led:hover{ transform: translateY(-3px); }
+.led.on{
+ background: linear-gradient(180deg, var(--verde), #1F6F43); /* Verde (encendido) */
+ box-shadow: 0 10px 28px rgba(46,139,87,0.18), 0 0 12px 6px rgba(46,139,87,0.4); /* Efecto glow */
+ transform: translateY(-4px);
+}
+.led.on:hover{ 
+    box-shadow: 0 10px 28px rgba(46,139,87,0.25), 0 0 16px 8px rgba(46,139,87,0.5); 
+}
+
+/* Info column */
+.info{ min-width:260px; display:flex; flex-direction:column; gap:12px; }
+
+/* Battery */
+.battery.small{ padding:10px; }
+.battery-title{ font-size:13px; color:var(--muted); margin-bottom:8px;}
+.battery-bar{ height:16px; background:#eee; border-radius:10px; overflow:hidden; }
+.battery-level{ height:100%; background: linear-gradient(90deg,var(--verde), #59b07a); width:0%; transition: width 400ms; }
+.battery-text{ font-size:13px; color:var(--muted); margin-top:6px; }
+
+/* Courts (Patrones) */
+.court-list{ display:flex; gap:10px; justify-content:center; align-items:center; padding-top:8px; flex-wrap:wrap; }
+.court-card{ width:80px; height:52px; border-radius:8px; overflow:hidden; border:2px solid transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; background:#fafafa; transition: all 160ms ease; }
+.court-card img{ width:100%; height:100%; object-fit:cover; display:block; }
+.court-card.selected{ border-color:var(--verde); box-shadow: 0 8px 20px rgba(46,139,87,0.12); transform: translateY(-3px); }
+.court-card:hover{ border-color:var(--verde); }
+
+/* Alerts */
+.alerts-list{ max-height:120px; overflow:auto; font-size:13px; color:var(--muted); padding:6px 0; }
+
+/* Buttons */
+.actions{ display:flex; gap:10px; justify-content:center; margin-top:16px; }
+.btn{ background:var(--azul); color:white; border:none; padding:10px 12px; border-radius:10px; cursor:pointer; font-weight:700; transition: background 200ms ease; }
+.btn:hover{ opacity:0.9; }
+.btn.outline{ background:transparent; color:var(--azul); border:2px solid var(--azul); }
+.btn.outline:hover{ background:var(--azul); color:white; }
+
+/* Footer */
+.foot{ margin-top:14px; text-align:center; color:var(--muted); font-size:12px; }
+
+/* Responsive */
+@media (max-width:780px){
+ .matrix-and-info{ flex-direction:column; align-items:center; }
+ .info{ width:92%; min-width:unset; }
+ .matrix{ width:100%; justify-items:center; }
+ .led{ width:40px; height:40px; }
+ .court-card{ width:70px; height:46px; }
+}
