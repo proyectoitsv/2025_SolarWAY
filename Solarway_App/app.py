@@ -38,16 +38,16 @@ PATTERNS = {
         "leds": ['3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18'] 
     },
     "vertical": {
-        "name": "Doble Línea Lateral",
+        "name": "Doble Línea Central",
         "image": "/static/img/vertical.png",
-        # IDs que forman dos columnas verticales y extremos
-        "leds": ['1', '2', '6', '7', '14', '15', '20', '21'] 
+        # RE-CORRECCIÓN: IDs que forman el tronco central de la cruz (10 LEDs)
+        "leds": ['1', '2', '6', '7', '14', '15', '19', '20', '21', '22'] 
     },
     "cross": {
         "name": "Patrón Cruz",
         "image": "/static/img/cross.png",
-        # Combinar ambos patrones
-        "leds": ['3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18'] + ['1', '2', '6', '7', '14', '15', '20', '21']
+        # Combinar el patrón horizontal y el nuevo patrón vertical
+        "leds": ['3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18'] + ['1', '2', '6', '7', '14', '15', '19', '20', '21', '22']
     }
 }
 
@@ -58,7 +58,8 @@ for led_id in PATTERNS["horizontal"]["leds"]:
 
 state = {
     "leds": initial_leds,
-    "battery": {"voltage": 12.5, "percent": 75, "charging": False}, 
+    # Corrección de batería (11.8V)
+    "battery": {"voltage": 11.8, "percent": 87, "charging": False}, 
     "current_court": "horizontal", 
     "last_alerts": []
 }

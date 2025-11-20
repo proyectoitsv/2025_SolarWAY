@@ -54,14 +54,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // --- Funciones de Renderizado ---
+
 function renderBattery(b) {
     const level = document.getElementById('battery-level');
     const text = document.getElementById('battery-text');
-    const pct = Math.max(0, Math.min(100, Math.round(b.percent || 0)));
     
-    level.style.width = pct + '%';
-    text.textContent = `${pct}% (${(b.voltage||0).toFixed(2)}V) ${b.charging ? '⚡' : ''}`;
+    // Rango de Voltaje de Batería (Usando 12.0V y 10.5V)
+    const V_MAX = 12.0; 
+    const V_MIN = 10.5; 
+    const voltage = b.voltage || 0;
+    
+    // Fórmula de mapeo: (Voltaje actual - Mínimo) / (Máximo - Mínimo) * 100
+    let calculatedPercent = ((voltage - V_MIN) / (V_MAX - V_MIN)) * 100;
+    
+    // Asegura que el porcentaje esté entre 0 y 100 y redondea
+    const finalPct = Math.max(0, Math.min(100, Math.round(calculatedPercent)));
+    
+    // Actualiza la barra y el texto
+    level.style.width = finalPct + '%';
+    text.textContent = `${finalPct}% (${voltage.toFixed(2)}V) ${b.charging ? '⚡' : ''}`;
 }
+
 
 function populateLeds(leds) {
     const matrix = document.getElementById('led-matrix');
@@ -97,7 +110,8 @@ function populateLeds(leds) {
             led.className = `led ${leds[id] ? 'on' : 'off'}`;
             led.id = `led-${id}`;
             led.dataset.id = id;
-            led.onclick = () => toggleLed(id, leds[id]);
+            // CORRECCIÓN CLAVE: El evento llama a toggleLed solo con el ID.
+            led.onclick = () => toggleLed(id); 
             matrix.appendChild(led);
         });
 
@@ -131,7 +145,6 @@ function populateCourts(courtsMap, current) {
             card.classList.add('selected');
         }
         
-        // Asumiendo que las imágenes son horizontal.png, vertical.png, cross.png, etc.
         card.innerHTML = `<img src="${info.image}" alt="${info.name}" title="${info.name}">`;
         card.onclick = () => selectCourt(id);
         list.appendChild(card);
@@ -140,8 +153,17 @@ function populateCourts(courtsMap, current) {
 
 // --- Funciones de Interacción con el Backend (Envío de Datos) ---
 
-async function toggleLed(id, current_value) {
-    const new_value = !current_value;
+// FUNCIÓN CORREGIDA: Obtiene el estado del LED del estado global 'state'
+async function toggleLed(id) { 
+    
+    // 1. OBTENER el estado ACTUAL del LED desde la variable global 'state'
+    // Esto asegura que siempre usamos el estado más reciente, sin importar SocketIO.
+    const current_value = state.leds[id]; 
+    
+    // 2. CALCULAR el nuevo valor
+    const new_value = !current_value; 
+    
+    // 3. ENVIAR el comando al servidor
     await fetch('/api/set_led', {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
