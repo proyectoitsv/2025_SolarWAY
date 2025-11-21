@@ -13,6 +13,9 @@ integrity="sha384-..." crossorigin="anonymous"></script>
         
         <div class="top">
             <img src="/static/img/SOLARWAY.png" alt="Logo SolarWay" class="logo" />
+            <button id="connect-ble-btn" class="btn connect-btn">
+                🔗 Conectar
+            </button>
         </div>
 
         <div class="matrix-and-info">
@@ -21,7 +24,7 @@ integrity="sha384-..." crossorigin="anonymous"></script>
                 <h1>Control de LEDs</h1>
                 
                 <div id="led-matrix" class="matrix">
-                    </div>
+                </div>
                 
                 <div class="actions">
                     <button id="turn-all-on" class="btn">Encender Todos</button>
@@ -52,10 +55,26 @@ integrity="sha384-..." crossorigin="anonymous"></script>
 
             </div>
 
-        </div> <footer class="foot">
+        </div> 
+        
+        <footer class="foot">
             SolarWay — panel de control minimalista
         </footer>
         
-    </div> <script src="/static/app.js"></script>
+    </div> 
+
+    <div id="ble-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Conectar Dispositivo SolarWay</h2>
+            <p id="current-status">Estado: Desconectado</p>
+            <button id="scan-btn" class="btn full-width">Buscar Dispositivos</button>
+            <div id="device-list" class="device-list">
+                <p style="margin-top: 10px; color: var(--muted);">Presiona "Buscar Dispositivos" para escanear.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
 </body>
 </html>
