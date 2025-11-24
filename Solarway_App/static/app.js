@@ -12,13 +12,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (j.ok) {
         state = j.state;
         courts = j.courts || {};
-        LAYOUT = j.layout || [2, 8, 8, 2, 2]; 
+        LAYOUT = j.layout || [2, 8, 8, 2, 2]; // Aseguramos el layout de 22 LEDs
         
         renderBattery(state.battery);
         populateLeds(state.leds);
         populateCourts(courts, state.current_court);
         attachGlobalListeners();
-        attachBleListeners(); // NUEVO: Listeners para BLE
     }
 
     // 2. SocketIO Listeners para actualizaciones en tiempo real
@@ -38,7 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     socket.on('led_update', leds => {
         state.leds = leds;
-        updateLedStatuses(leds); 
+        updateLedStatuses(leds); // Actualiza los colores de los LEDs
     });
     
     socket.on('court_changed', d => {
@@ -52,23 +51,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         node.textContent = `[${new Date().toLocaleTimeString()}] ${d.message}`;
         list.prepend(node);
     });
-
-    // NUEVO: Listener de estado de conexión BLE
-    socket.on('ble_status', d => {
-        const statusText = document.getElementById('current-status');
-        const bleBtn = document.getElementById('connect-ble-btn');
-
-        if (d.status === 'connected') {
-            statusText.textContent = `Estado: CONECTADO (${d.address})`;
-            bleBtn.textContent = '✅ Conectado';
-            bleBtn.style.backgroundColor = 'var(--verde)';
-            bleModal.style.display = 'none'; // Cerrar modal al conectar
-        } else {
-            statusText.textContent = `Estado: Desconectado`;
-            bleBtn.textContent = '🔗 Conectar';
-            bleBtn.style.backgroundColor = 'var(--azul)';
-        }
-    });
 });
 
 // --- Funciones de Renderizado ---
@@ -77,14 +59,18 @@ function renderBattery(b) {
     const level = document.getElementById('battery-level');
     const text = document.getElementById('battery-text');
     
+    // Rango de Voltaje de Batería (Usando 12.0V y 10.5V)
     const V_MAX = 12.0; 
     const V_MIN = 10.5; 
     const voltage = b.voltage || 0;
     
+    // Fórmula de mapeo: (Voltaje actual - Mínimo) / (Máximo - Mínimo) * 100
     let calculatedPercent = ((voltage - V_MIN) / (V_MAX - V_MIN)) * 100;
     
+    // Asegura que el porcentaje esté entre 0 y 100 y redondea
     const finalPct = Math.max(0, Math.min(100, Math.round(calculatedPercent)));
     
+    // Actualiza la barra y el texto
     level.style.width = finalPct + '%';
     text.textContent = `${finalPct}% (${voltage.toFixed(2)}V) ${b.charging ? '⚡' : ''}`;
 }
@@ -96,6 +82,7 @@ function populateLeds(leds) {
     
     const layoutCounts = LAYOUT; 
     
+    // Mapear los conteos de LEDs a IDs secuenciales (1...22)
     let currentId = 1;
     const layoutMap = layoutCounts.map(count => {
         const row = [];
@@ -123,6 +110,7 @@ function populateLeds(leds) {
             led.className = `led ${leds[id] ? 'on' : 'off'}`;
             led.id = `led-${id}`;
             led.dataset.id = id;
+            // CORRECCIÓN CLAVE: El evento llama a toggleLed solo con el ID.
             led.onclick = () => toggleLed(id); 
             matrix.appendChild(led);
         });
@@ -165,10 +153,17 @@ function populateCourts(courtsMap, current) {
 
 // --- Funciones de Interacción con el Backend (Envío de Datos) ---
 
+// FUNCIÓN CORREGIDA: Obtiene el estado del LED del estado global 'state'
 async function toggleLed(id) { 
+    
+    // 1. OBTENER el estado ACTUAL del LED desde la variable global 'state'
+    // Esto asegura que siempre usamos el estado más reciente, sin importar SocketIO.
     const current_value = state.leds[id]; 
+    
+    // 2. CALCULAR el nuevo valor
     const new_value = !current_value; 
     
+    // 3. ENVIAR el comando al servidor
     await fetch('/api/set_led', {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
@@ -195,80 +190,4 @@ async function setAllLeds(value) {
 function attachGlobalListeners() {
     document.getElementById('turn-all-on').onclick = () => setAllLeds(true);
     document.getElementById('turn-all-off').onclick = () => setAllLeds(false);
-}
-
-// --- Funciones para la Conexión BLE (NUEVO) ---
-
-const bleModal = document.getElementById('ble-modal');
-const bleBtn = document.getElementById('connect-ble-btn');
-const closeBtn = document.querySelector('.close-btn');
-const scanBtn = document.getElementById('scan-btn');
-const deviceList = document.getElementById('device-list');
-// statusText se actualiza via SocketIO
-
-function attachBleListeners() {
-    // Abrir/Cerrar Modal
-    bleBtn.onclick = () => bleModal.style.display = 'block';
-    closeBtn.onclick = () => bleModal.style.display = 'none';
-    window.onclick = (event) => {
-        if (event.target == bleModal) {
-            bleModal.style.display = 'none';
-        }
-    };
-    
-    // Iniciar escaneo
-    scanBtn.onclick = scanDevices;
-}
-
-// Función para buscar dispositivos
-async function scanDevices() {
-    scanBtn.disabled = true;
-    scanBtn.textContent = 'Escaneando...';
-    deviceList.innerHTML = '<p style="color: var(--azul);">Buscando dispositivos cercanos...</p>';
-    
-    const resp = await fetch('/api/scan_ble');
-    const j = await resp.json();
-
-    scanBtn.disabled = false;
-    scanBtn.textContent = 'Buscar Dispositivos';
-    deviceList.innerHTML = '';
-    
-    if (j.ok && j.devices.length > 0) {
-        j.devices.forEach(device => {
-            const item = document.createElement('div');
-            item.className = 'device-item';
-            
-            // Mostrar solo la parte principal del nombre, si existe
-            const name = device.name.replace('SolarWay', 'SW'); 
-
-            item.innerHTML = `<span>${name}</span><button class="btn" data-address="${device.address}">Conectar</button>`;
-            
-            item.querySelector('button').onclick = () => connectDevice(device.address);
-            deviceList.appendChild(item);
-        });
-    } else {
-        deviceList.innerHTML = '<p style="color: red;">No se encontraron dispositivos "SolarWay". Asegúrate que el ESP32 esté encendido.</p>';
-    }
-}
-
-// Función para conectar a un dispositivo
-async function connectDevice(address) {
-    const statusText = document.getElementById('current-status');
-    statusText.textContent = 'Estado: Intentando conectar...';
-    deviceList.innerHTML = `<p style="color: var(--azul);">Conectando a ${address}...</p>`;
-    
-    const resp = await fetch('/api/connect_ble', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({address: address})
-    });
-    
-    const j = await resp.json();
-    
-    if (!j.ok) {
-        // El estado final se actualizará via SocketIO, pero mostramos el error inmediato
-        alert(`Fallo la conexión: ${j.error}`);
-        statusText.textContent = `Estado: Fallo la conexión.`;
-        scanDevices(); // Volver a escanear
-    }
 }
