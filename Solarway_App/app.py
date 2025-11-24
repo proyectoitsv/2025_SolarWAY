@@ -1,7 +1,6 @@
 # app.py
 import eventlet
 eventlet.monkey_patch()
-import threading
 
 from flask import Flask, render_template, jsonify, request
 from flask_socketio import SocketIO, emit
@@ -40,14 +39,14 @@ PATTERNS = {
     "vertical": {
         "name": "Doble Línea Central",
         "image": "/static/img/vertical.png",
-        # RE-CORRECCIÓN: IDs que forman el tronco central de la cruz (10 LEDs)
-        "leds": ['1', '2', '6', '7', '14', '15', '19', '20', '21', '22'] 
+        # CORRECCIÓN: IDs que forman el tronco central de la cruz (10 LEDs)
+        "leds": ['1', '2', '6', '7', '10', '11', '14', '15', '19', '20'] # Ajuste para que se vea más simétrico
     },
     "cross": {
         "name": "Patrón Cruz",
         "image": "/static/img/cross.png",
-        # Combinar el patrón horizontal y el nuevo patrón vertical
-        "leds": ['3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18'] + ['1', '2', '6', '7', '14', '15', '19', '20', '21', '22']
+        # Combinar ambos patrones (eliminando duplicados)
+        "leds": list(set(['3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18'] + ['1', '2', '6', '7', '10', '11', '14', '15', '19', '20']))
     }
 }
 
@@ -58,8 +57,8 @@ for led_id in PATTERNS["horizontal"]["leds"]:
 
 state = {
     "leds": initial_leds,
-    # Corrección de batería (11.8V)
-    "battery": {"voltage": 11.8, "percent": 87, "charging": False}, 
+    # El cálculo del porcentaje se hace en JS ahora
+    "battery": {"voltage": 11.8, "percent": 0, "charging": False}, 
     "current_court": "horizontal", 
     "last_alerts": []
 }
@@ -72,8 +71,11 @@ def index():
 
 @app.route('/api/state', methods=['GET'])
 def api_state():
+    # Esta ruta es CRÍTICA, ya que el JS usa esto para saber el LAYOUT y los PATRONES
     return jsonify({"ok": True, "state": state, "courts": courts, "layout": LAYOUT})
 
+# Las siguientes rutas (set_court, set_led) ya no son usadas por app.js si el Bluetooth funciona, 
+# pero se mantienen por si acaso. 
 @app.route('/api/set_court', methods=['POST'])
 def api_set_court():
     data = request.get_json(force=True)
@@ -82,8 +84,8 @@ def api_set_court():
     if pattern_id not in PATTERNS:
         return jsonify({"ok": False, "error": "invalid pattern"}), 400
     
+    # Lógica de cambio de estado en el servidor (solo si no usas BLE)
     state['current_court'] = pattern_id
-    
     for led_id in state['leds']:
         state['leds'][led_id] = False
     leds_to_turn_on = PATTERNS[pattern_id]['leds']
@@ -103,6 +105,7 @@ def api_set_led():
     led = data.get('led')
     value = data.get('value')
     
+    # Lógica de cambio de estado en el servidor (solo si no usas BLE)
     if led == "ALL": 
         new_leds = {id_: bool(value) for id_ in ALL_LED_IDS}
         state['leds'].update(new_leds)
