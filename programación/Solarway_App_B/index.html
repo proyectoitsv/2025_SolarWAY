@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Matriz LED 2x11 - SolarWay</title>
+    <!-- Carga de Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Usamos la fuente Inter de Google */
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f3f4f6; /* Fondo gris claro */
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+        }
+
+        .led-container {
+            /* 11 Filas, 2 Columnas: 22 LEDs. Usamos Grid de 4 columnas para la forma de cruz */
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4 columnas para el layout de cruz */
+            grid-template-rows: repeat(11, minmax(1.5rem, 1fr)); /* Filas más compactas para la forma vertical */
+            gap: 0.5rem 0.2rem;
+            padding: 1rem;
+            position: relative;
+            max-width: 400px; /* Ancho máximo para que no se extienda demasiado */
+            margin: 0 auto; /* Centrar el contenedor */
+        }
+
+        .led-cell {
+            /* Círculo para simular el LED */
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 9999px; /* Fully rounded */
+            cursor: pointer;
+            transition: background-color 0.1s ease, box-shadow 0.1s ease, opacity 0.1s ease;
+            opacity: 0.4; /* Opacidad baja para apagado */
+            background-color: #10b981; /* Default Green */
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            justify-self: center; /* Centrar dentro de la celda de grid */
+            align-self: center;
+        }
+
+        .led-on {
+            opacity: 1; /* Opacidad total para encendido */
+            background-color: #10b981; 
+            box-shadow: 0 0 10px #10b981, 0 0 20px rgba(16, 185, 129, 0.5); /* Sombra brillante */
+        }
+        
+        /* *****************************************************************************
+           Mapeo de la Matriz 2x11 a la Cuadrícula 4x11 para la FORMA DE CRUZ (Imagen)
+           
+           La estructura es la siguiente:
+           - Filas 0, 2, 4, 6, 8, 10: Angostas (Columnas 2, 3)
+           - Filas 1, 3, 5, 7, 9: Anchas (Columnas 1, 4)
+           *****************************************************************************
+        */
+        
+        /* Filas Angostas (columnas centrales) */
+        .r0-c0 { grid-column: 2; grid-row: 1; } .r0-c1 { grid-column: 3; grid-row: 1; }
+        .r2-c0 { grid-column: 2; grid-row: 3; } .r2-c1 { grid-column: 3; grid-row: 3; }
+        .r4-c0 { grid-column: 2; grid-row: 5; } .r4-c1 { grid-column: 3; grid-row: 5; }
+        .r6-c0 { grid-column: 2; grid-row: 7; } .r6-c1 { grid-column: 3; grid-row: 7; }
+        .r8-c0 { grid-column: 2; grid-row: 9; } .r8-c1 { grid-column: 3; grid-row: 9; }
+        .r10-c0 { grid-column: 2; grid-row: 11; } .r10-c1 { grid-column: 3; grid-row: 11; }
+
+        /* Filas Anchas (columnas exteriores) */
+        .r1-c0 { grid-column: 1; grid-row: 2; } .r1-c1 { grid-column: 4; grid-row: 2; }
+        .r3-c0 { grid-column: 1; grid-row: 4; } .r3-c1 { grid-column: 4; grid-row: 4; }
+        .r5-c0 { grid-column: 1; grid-row: 6; } .r5-c1 { grid-column: 4; grid-row: 6; }
+        .r7-c0 { grid-column: 1; grid-row: 8; } .r7-c1 { grid-column: 4; grid-row: 8; }
+        .r9-c0 { grid-column: 1; grid-row: 10; } .r9-c1 { grid-column: 4; grid-row: 10; }
+
+
+        /* Estilo para los botones de encendido/apagado */
+        .action-button {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .on-button {
+            background-color: #059669; /* Green-700 */
+            color: white;
+            border: 1px solid #047857;
+        }
+        .on-button:hover {
+            background-color: #047857;
+        }
+        .off-button {
+            background-color: white;
+            color: #059669;
+            border: 1px solid #059669;
+        }
+        .off-button:hover {
+            background-color: #f0fdf4; /* Green-50 */
+        }
+        
+        .disabled-btn {
+            background-color: #9ca3af !important;
+            color: #e5e7eb !important;
+            cursor: not-allowed;
+            box-shadow: none;
+            border: none;
+        }
+        
+        /* Barra de progreso de batería */
+        .battery-bar-bg {
+            background-color: #d1d5db;
+        }
+        .battery-bar-fill {
+            transition: width 0.5s ease;
+            background-color: #10b981;
+            border-radius: 0.5rem;
+        }
+
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+
+    <div class="max-w-4xl mx-auto">
+        <!-- Logo simulado --><div class="text-center mb-8">
+            <svg class="mx-auto" width="150" height="40" viewBox="0 0 150 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="0" y="0" width="150" height="40" fill="none"/>
+                <text x="75" y="28" font-family="Verdana, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#059669">SOLARWAY</text>
+                <path d="M75 5 L70 15 L80 15 Z" fill="#facc15"/>
+            </svg>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Columna Izquierda: Control de LEDs y Botones --><div class="lg:col-span-2 card">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">Control de LEDs</h2>
+                    <!-- Botón de Conexión BLE --><button id="connect-button" 
+                            class="px-3 py-1 text-sm text-white font-semibold rounded-lg transition duration-200 shadow-md 
+                                   bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                        Conectar Bluetooth
+                    </button>
+                </div>
+
+                <!-- Área de la Matriz LED --><div id="led-grid" class="led-container">
+                    <!-- Las celdas LED se generarán aquí por JavaScript --></div>
+
+                <!-- Botones Encender/Apagar Todos --><div class="flex justify-center gap-4 mt-6">
+                    <button id="all-on-button" 
+                            class="action-button on-button disabled-btn" disabled>
+                        Encender Todos
+                    </button>
+                    <button id="all-off-button" 
+                            class="action-button off-button disabled-btn" disabled>
+                        Apagar Todos
+                    </button>
+                </div>
+            </div>
+
+            <!-- Columna Derecha: Información y Opciones --><div class="lg:col-span-1 space-y-4">
+                
+                <!-- Tarjeta de Batería --><div class="card p-4">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Batería</h3>
+                    <div class="flex items-center space-x-2 mb-1">
+                        <div class="flex-grow h-3 battery-bar-bg rounded-lg overflow-hidden">
+                            <div id="battery-fill" class="h-full battery-bar-fill" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                    <p id="battery-level" class="text-sm text-gray-600">100% (12.50V)</p>
+                </div>
+
+                <!-- Tarjeta de Patrones (Funcionalidad Simulada) --><div class="card p-4">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">Seleccionar Patrón</h3>
+                    <div class="flex justify-between space-x-3">
+                        <button class="p-3 border-2 border-gray-300 rounded-lg transition duration-150 hover:border-blue-500 bg-gray-50 flex-1 text-2xl"
+                                title="Patrón 1">#</button>
+                        <button class="p-3 border-2 border-gray-300 rounded-lg transition duration-150 hover:border-blue-500 bg-gray-50 flex-1 text-2xl"
+                                title="Patrón 2">=</button>
+                        <button class="p-3 border-2 border-gray-300 rounded-lg transition duration-150 hover:border-blue-500 bg-gray-50 flex-1 text-2xl"
+                                title="Patrón 3">||</button>
+                    </div>
+                </div>
+
+                <!-- Tarjeta de Avisos / Log --><div class="card p-4">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Avisos / Registro</h3>
+                    <div id="log-output" class="text-gray-600 text-sm overflow-y-auto h-20 whitespace-pre-wrap">
+                        Esperando conexión...
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =======================================================
+        // 1. CONFIGURACIÓN E INICIALIZACIÓN
+        // =======================================================
+
+        // UUIDs de BLE (DEBEN COINCIDIR con la implementación en el ESP32)
+        const LED_SERVICE_UUID = '4fa95e10-c1f3-4674-bc50-f80e03e541b1';
+        const LED_CHARACTERISTIC_UUID = '4fa95e11-c1f3-4674-bc50-f80e03e541b1';
+        // Nombre del dispositivo configurado en el código Arduino
+        const DEVICE_NAME = 'ESP32-LED-Matrix'; 
+
+        const NUM_ROWS = 11;
+        const NUM_COLS = 2;
+        const TOTAL_LEDS = NUM_ROWS * NUM_COLS; // 22 LEDs
+
+        // Almacena el estado actual de los 22 LEDs (false = apagado, true = encendido)
+        let ledStates = Array(TOTAL_LEDS).fill(false);
+
+        // Referencias a elementos del DOM
+        const connectButton = document.getElementById('connect-button');
+        const allOnButton = document.getElementById('all-on-button');
+        const allOffButton = document.getElementById('all-off-button');
+        const ledGrid = document.getElementById('led-grid');
+        const logOutput = document.getElementById('log-output');
+
+        // Variables de conexión BLE
+        let bleDevice = null;
+        let ledCharacteristic = null;
+
+        // =======================================================
+        // 2. FUNCIONES DE UI (GENERACIÓN Y LOG)
+        // =======================================================
+
+        /**
+         * Escribe un mensaje en el registro de la UI.
+         * @param {string} message Mensaje a registrar.
+         */
+        function log(message) {
+            const now = new Date().toLocaleTimeString();
+            const logLine = document.createElement('p');
+            logLine.textContent = `[${now}] ${message}`;
+            logLine.className = 'text-xs mb-1';
+            logOutput.prepend(logLine);
+            // Limitamos a 5 líneas para no desbordar
+            if (logOutput.children.length > 5) {
+                logOutput.removeChild(logOutput.lastChild);
+            }
+        }
+
+        /**
+         * Actualiza el estado visual de la conexión y habilita/deshabilita controles.
+         * @param {boolean} isConnected Si está conectado o no.
+         */
+        function updateConnectionStatus(isConnected) {
+            connectButton.textContent = isConnected ? 'Desconectar' : 'Conectar Bluetooth';
+            
+            // Habilitar/Deshabilitar botones de control
+            allOnButton.disabled = !isConnected;
+            allOffButton.disabled = !isConnected;
+            
+            // Aplicar estilos de deshabilitado
+            if (isConnected) {
+                allOnButton.classList.remove('disabled-btn');
+                allOffButton.classList.remove('disabled-btn');
+            } else {
+                allOnButton.classList.add('disabled-btn');
+                allOffButton.classList.add('disabled-btn');
+            }
+        }
+
+        /**
+         * Genera y adjunta las celdas LED a la cuadrícula.
+         */
+        function renderLEDGrid() {
+            ledGrid.innerHTML = ''; // Limpia el grid
+
+            for (let r = 0; r < NUM_ROWS; r++) {
+                for (let c = 0; c < NUM_COLS; c++) {
+                    const ledIndex = r * NUM_COLS + c;
+
+                    const cell = document.createElement('div');
+                    // Usamos las clases de posición definidas en <style> para el nuevo layout
+                    cell.className = `led-cell r${r}-c${c}`;
+                    cell.dataset.index = ledIndex;
+                    
+                    // Inicializa el estado visual
+                    if (ledStates[ledIndex]) {
+                        cell.classList.add('led-on');
+                    }
+                    
+                    // Manejador de click - ¡ENVÍO INSTANTÁNEO!
+                    cell.addEventListener('click', () => {
+                        // Solo permitir interacción si está conectado
+                        if (bleDevice && bleDevice.gatt.connected) {
+                            toggleLED(ledIndex, cell);
+                            sendLEDState(); // Envío instantáneo al hacer click
+                        } else {
+                            log('ERROR: Necesitas conectar el Bluetooth primero.');
+                        }
+                    });
+                    ledGrid.appendChild(cell);
+                }
+            }
+        }
+
+        /**
+         * Alterna el estado de un LED al hacer click.
+         * @param {number} index Índice del LED en el array (0 a 21).
+         * @param {HTMLElement} cell El elemento DOM de la celda.
+         */
+        function toggleLED(index, cell) {
+            ledStates[index] = !ledStates[index];
+            if (ledStates[index]) {
+                cell.classList.add('led-on');
+            } else {
+                cell.classList.remove('led-on');
+            }
+        }
+        
+        /**
+         * Enciende o apaga todos los LEDs y realiza el envío.
+         * @param {boolean} state El estado deseado (true para encender, false para apagar).
+         */
+        function toggleAll(state) {
+            if (!bleDevice || !bleDevice.gatt.connected) {
+                log('ERROR: Necesitas conectar el Bluetooth primero.');
+                return;
+            }
+
+            ledStates.fill(state);
+            // Actualizar la UI
+            document.querySelectorAll('.led-cell').forEach(cell => {
+                if (state) {
+                    cell.classList.add('led-on');
+                } else {
+                    cell.classList.remove('led-on');
+                }
+            });
+            sendLEDState();
+        }
+
+
+        // =======================================================
+        // 3. FUNCIONES DE CONEXIÓN BLE Y ENVÍO DE DATOS
+        // =======================================================
+
+        /**
+         * Empaqueta el estado de los 22 LEDs en un buffer de 3 bytes.
+         * Cada bit representa el estado de un LED.
+         * @returns {Uint8Array} El buffer de 3 bytes con el estado.
+         */
+        function packLEDState() {
+            const buffer = new Uint8Array(3); // 3 bytes = 24 bits (solo usamos 22)
+            
+            for (let i = 0; i < TOTAL_LEDS; i++) {
+                if (ledStates[i]) {
+                    const byteIndex = Math.floor(i / 8);
+                    const bitIndex = i % 8;
+                    // Se establece el bit en la posición bitIndex del byteIndex
+                    buffer[byteIndex] |= (1 << bitIndex);
+                }
+            }
+            return buffer;
+        }
+
+        /**
+         * Envía el estado actual de la matriz LED al dispositivo ESP32.
+         * Nota: Esta función es ASÍNCRONA y se llama inmediatamente al hacer click.
+         */
+        async function sendLEDState() {
+            if (!ledCharacteristic) {
+                log('ERROR: Característica BLE no disponible. Reintente la conexión.');
+                return;
+            }
+            if (bleDevice && !bleDevice.gatt.connected) {
+                 log('ERROR: Dispositivo desconectado. Reintente la conexión.');
+                return;
+            }
+
+            try {
+                const data = packLEDState();
+                // writeValueWithoutResponse es la forma más rápida y preferida para datos binarios.
+                await ledCharacteristic.writeValueWithoutResponse(data); 
+            } catch (error) {
+                log(`ERROR al escribir en la característica: ${error.message}`);
+                updateConnectionStatus(false);
+            }
+        }
+
+        /**
+         * Maneja el proceso de conexión y desconexión BLE.
+         */
+        async function handleConnectDisconnect() {
+            // VERIFICACIÓN CLAVE: Soporte de Web Bluetooth
+            if (!navigator.bluetooth) {
+                log('ERROR: Web Bluetooth NO ESTÁ SOPORTADO en este navegador/entorno.');
+                return;
+            }
+
+            if (bleDevice && bleDevice.gatt.connected) {
+                // Desconectar
+                bleDevice.gatt.disconnect();
+                updateConnectionStatus(false);
+                log('Desconectado del dispositivo.');
+                return;
+            }
+
+            // Iniciar proceso de conexión
+            try {
+                log('Buscando dispositivos BLE...');
+                connectButton.disabled = true;
+
+                // 1. Solicitar el dispositivo
+                const device = await navigator.bluetooth.requestDevice({
+                    filters: [{ name: DEVICE_NAME }], 
+                    optionalServices: [LED_SERVICE_UUID] 
+                });
+
+                bleDevice = device;
+                bleDevice.addEventListener('gattserverdisconnected', () => {
+                    log('El dispositivo se ha desconectado inesperadamente.');
+                    updateConnectionStatus(false);
+                });
+
+                log(`Conectando al dispositivo: ${device.name || 'Dispositivo Desconocido'}`);
+
+                // 2. Conectar al servidor GATT
+                const server = await device.gatt.connect();
+                log('Conexión GATT establecida.');
+
+                // 3. Obtener el servicio
+                const service = await server.getPrimaryService(LED_SERVICE_UUID);
+                log('Servicio LED encontrado.');
+
+                // 4. Obtener la característica
+                ledCharacteristic = await service.getCharacteristic(LED_CHARACTERISTIC_UUID);
+                log('Característica LED encontrada.');
+                
+                // 5. Éxito
+                updateConnectionStatus(true);
+                log('¡Conexión BLE exitosa! Puedes controlar la matriz.');
+
+            } catch (error) {
+                if (error.message.includes('cancelled')) {
+                    log('Búsqueda de dispositivo cancelada por el usuario.');
+                } else {
+                    log(`ERROR de conexión: ${error.message}`);
+                }
+                updateConnectionStatus(false);
+            } finally {
+                // Asegurar que el botón se habilite siempre, incluso después de un error/cancelación.
+                connectButton.disabled = false;
+            }
+        }
+
+        // =======================================================
+        // 4. LISTENERS Y ARRANQUE
+        // =======================================================
+
+        // Listener del botón de Conectar/Desconectar
+        connectButton.addEventListener('click', handleConnectDisconnect);
+        
+        // Listeners de Encender/Apagar Todos
+        allOnButton.addEventListener('click', () => toggleAll(true));
+        allOffButton.addEventListener('click', () => toggleAll(false));
+
+        // Inicializar la cuadrícula de LEDs cuando el DOM esté cargado
+        document.addEventListener('DOMContentLoaded', () => {
+            renderLEDGrid();
+            updateConnectionStatus(false); // Asegurar estado inicial de desconexión
+        });
+
+    </script>
+</body>
+</html>
