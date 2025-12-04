@@ -1,7 +1,7 @@
 flowchart TD
-    A[Inicio: App Web Cargada] --> B{¿Web Bluetooth Soportado?};
+    A[Inicio: App Web Cargada] --> B{¿Bluetooth ACTIVADO?};
 
-    B -- No --> C[Mostrar ERROR: Web Bluetooth NO SOPORTADO];
+    B -- No --> C[Mostrar ERROR: Bluetooth DESACTIVADO];
     B -- Sí --> D[Usuario inicia Conexión Bluetooth];
 
     D --> E[AppWeb: Solicita dispositivo BLE];
