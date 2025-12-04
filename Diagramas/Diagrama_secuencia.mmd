@@ -4,27 +4,27 @@ sequenceDiagram
     participant ESP32_Caracteristica
     participant ESP32_Firmware
     
-    Usuario->>AppWeb: Clic en LED [r][c]
+    Usuario->>AppWeb: Envío de Nuevo Estado LED
     
     activate AppWeb
-    AppWeb->>AppWeb: 1. toggleLED([r][c]) (Actualiza estado local)
-    AppWeb->>AppWeb: 2. packLEDState() (Genera el buffer de 3 bytes)
+    AppWeb->>AppWeb: 1. Actualiza Estado Local del LED
+    AppWeb->>AppWeb: 2. Codifica los 22 LEDs en 3 bytes
     
-    AppWeb->>ESP32_Caracteristica: writeValueWithoutResponse(3 bytes)
+    AppWeb->>ESP32_Caracteristica: Transmitir 3 bytes (Comando)
     deactivate AppWeb
     
     activate ESP32_Caracteristica
-    ESP32_Caracteristica->>ESP32_Firmware: onWrite(3 bytes de datos)
+    ESP32_Caracteristica->>ESP32_Firmware: Notificación de Escritura de Datos
     deactivate ESP32_Caracteristica
     
     activate ESP32_Firmware
-    ESP32_Firmware->>ESP32_Firmware: 1. Desempaquetar 3 bytes
-    ESP32_Firmware->>ESP32_Firmware: 2. Actualizar ledMatrix[2x11]
-    ESP32_Firmware->>ESP32_Firmware: 3. Decidir shouldMultiplex (basado en conteo de ON)
+    ESP32_Firmware->>ESP32_Firmware: 1. Decodificar 3 bytes
+    ESP32_Firmware->>ESP32_Firmware: 2. Actualizar Matriz de Estado (2x11)
+    ESP32_Firmware->>ESP32_Firmware: 3. Determinar si requiere Multiplexación
     
     alt LED(s) Activo(s)
-        ESP32_Firmware->>ESP32_Firmware: updateLEDs() (Loop de Multiplexación)
+        ESP32_Firmware->>ESP32_Firmware: Ejecutar Ciclo de Multiplexación
     else Todos Apagados
-        ESP32_Firmware->>ESP32_Firmware: setAllPinsLow() (Desactivar MUX)
+        ESP32_Firmware->>ESP32_Firmware: Apagar Todos los Pines de Control
     end
     deactivate ESP32_Firmware
