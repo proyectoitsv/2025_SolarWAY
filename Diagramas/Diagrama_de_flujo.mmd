@@ -12,7 +12,8 @@ flowchart TD
     G --> H[App: Transmitir el Comando Inalámbricamente al Módulo de Control];
 
     H --> I[Módulo: Recibir y Decodificar el Comando];
-    I --> J{¿El Comando Requiere Iluminación (1 o más Luces ON)?};
+
+    I --> J{Estado Requiere Luces ON?};
 
     J -- Sí --> K[Módulo: Activar Sistema de Control de Luces (Multiplexación Dinámica)];
     J -- No --> L[Módulo: Apagar Salidas de Control de Matriz];
