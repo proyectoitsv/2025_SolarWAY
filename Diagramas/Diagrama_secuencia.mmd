@@ -1,30 +1,30 @@
 sequenceDiagram
     actor Usuario
     participant AppWeb
-    participant ESP32_Caracteristica
-    participant ESP32_Firmware
+    participant Caracteristica_BLE
+    participant Firmware_ESP32
     
-    Usuario->>AppWeb: Envío de Nuevo Estado LED
+    Usuario->>AppWeb: Enviar comando de Matriz LED
     
     activate AppWeb
-    AppWeb->>AppWeb: 1. Actualiza Estado Local del LED
-    AppWeb->>AppWeb: 2. Codifica los 22 LEDs en 3 bytes
+    AppWeb->>AppWeb: 1. Actualizar estado interno de 22 LEDs
+    AppWeb->>AppWeb: 2. Codificar estado en un paquete de 3 bytes
     
-    AppWeb->>ESP32_Caracteristica: Transmitir 3 bytes (Comando)
+    AppWeb->>Caracteristica_BLE: WRITE_CMD (3 bytes)
     deactivate AppWeb
     
-    activate ESP32_Caracteristica
-    ESP32_Caracteristica->>ESP32_Firmware: Notificación de Escritura de Datos
-    deactivate ESP32_Caracteristica
+    activate Caracteristica_BLE
+    Caracteristica_BLE->>Firmware_ESP32: Notificación de Nuevo Dato
+    deactivate Caracteristica_BLE
     
-    activate ESP32_Firmware
-    ESP32_Firmware->>ESP32_Firmware: 1. Decodificar 3 bytes
-    ESP32_Firmware->>ESP32_Firmware: 2. Actualizar Matriz de Estado (2x11)
-    ESP32_Firmware->>ESP32_Firmware: 3. Determinar si requiere Multiplexación
+    activate Firmware_ESP32
+    Firmware_ESP32->>Firmware_ESP32: 1. Decodificar el paquete de 3 bytes
+    Firmware_ESP32->>Firmware_ESP32: 2. Actualizar Matriz de Control (ledMatrix)
+    Firmware_ESP32->>Firmware_ESP32: 3. Comprobar si se requiere la Multiplexación
     
-    alt LED(s) Activo(s)
-        ESP32_Firmware->>ESP32_Firmware: Ejecutar Ciclo de Multiplexación
-    else Todos Apagados
-        ESP32_Firmware->>ESP32_Firmware: Apagar Todos los Pines de Control
+    alt LEDs Encendidos
+        Firmware_ESP32->>Firmware_ESP32: Iniciar/Mantener Ciclo de Multiplexación
+    else LEDs Apagados
+        Firmware_ESP32->>Firmware_ESP32: Apagar todos los pines de control
     end
-    deactivate ESP32_Firmware
+    deactivate Firmware_ESP32

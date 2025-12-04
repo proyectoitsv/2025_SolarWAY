@@ -2,26 +2,25 @@
 graph TD
     Usuario((Usuario))
     AppWeb((Aplicación Web BLE))
-    ESP32((Controlador ESP32 - Firmware))
+    ESP32((Controlador ESP32))
 
-    %% Casos de uso de la App Web
-    gestionarConexion[[1. Gestionar Conexión BLE - Conectar/Desconectar]]
-    cambiarEstadoLED[[2. Enviar Estado de LED Individual]]
-    controlMasivo[[3. Enviar Estado de Todos los LEDs - On/Off]]
-    monitorearBateria[[4. Mostrar Nivel de Batería]]
-    visualizarRegistro[[5. Visualizar Registro de Eventos]]
+    %% Casos de uso
+    gestionarConexion[[Gestionar Conexión BLE]]
+    controlIndividual[[Controlar LED Individual]]
+    controlMasivo[[Controlar Todos los LEDs]]
+    monitorearBateria[[Monitorear Nivel de Batería]]
     
-    %% Flujos de datos/control
+    %% Relaciones
     Usuario --> AppWeb
     
     AppWeb --> gestionarConexion
-    AppWeb --> cambiarEstadoLED
+    AppWeb --> controlIndividual
     AppWeb --> controlMasivo
-    AppWeb --> visualizarRegistro
+    AppWeb --> monitorearBateria
     
-    cambiarEstadoLED -->|WRITE Nuevo Estado LED (3 bytes)| ESP32 
-    controlMasivo -->|WRITE Nuevo Estado (3 bytes)| ESP32 
+    controlIndividual -->|Envío de Estado (3 bytes)| ESP32 
+    controlMasivo -->|Envío de Estado (3 bytes)| ESP32 
     
-    ESP32 -->|Lee pin ADC| monitorearBateria
+    ESP32 -->|Lectura ADC| monitorearBateria
     
-    ESP32 -.->|Lectura Voltaje Batería| AppWeb
+    ESP32 -.->|Reporte de Voltaje| AppWeb

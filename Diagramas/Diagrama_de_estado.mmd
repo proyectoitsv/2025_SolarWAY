@@ -1,36 +1,38 @@
 stateDiagram
   direction TB
   
-  state MatrizApagada_NoMux <<choice>>
+  state Eleccion_de_Accion <<choice>>
   
-  [*] --> Desconectado: Inicio/Fallo de Conexión
+  [*] --> Desconectado: Inicio/Fallo de Energía
   
-  Desconectado --> Conectado: Conexión BLE Exitosa
+  Desconectado --> Conectado: Enlace BLE Establecido
   
-  Conectado --> MatrizApagada_NoMux: Inicialización
+  Conectado --> Eleccion_de_Accion: Inicio de Operación
   
-  MatrizApagada_NoMux --> Multiplexando: Dato Recibido (1+ LEDs ON)
-  Multiplexando --> MatrizApagada_NoMux: Dato Recibido (0 LEDs ON)
+  Eleccion_de_Accion --> Multiplexando: Comando Recibido (LEDs ON)
+  Eleccion_de_Accion --> Esperando_Comando: Comando Recibido (LEDs OFF)
   
-  Conectado --> Desconectado: Dispositivo Desconectado (BLE)
-  MatrizApagada_NoMux --> Desconectado: Dispositivo Desconectado (BLE)
-  Multiplexando --> Desconectado: Dispositivo Desconectado (BLE)
+  Esperando_Comando --> Multiplexando: Nuevo Comando ON
+  Multiplexando --> Esperando_Comando: Comando OFF Recibido
+  
+  Conectado --> Desconectado: Conexión BLE Perdida
+  Esperando_Comando --> Desconectado: Conexión BLE Perdida
+  Multiplexando --> Desconectado: Conexión BLE Perdida
   
   state Desconectado {
-      [*] --> BuscandoBLE
-      BuscandoBLE --> Publicidad
-      Publicidad --> BuscandoBLE : Tiempo de Publicidad Expira
-      state Note: Sistema en Reposo, Sin Alimentación de LEDs
+      [*] --> Publicidad_BLE
+      Publicidad_BLE --> Publicidad_BLE : Ciclo de Anuncio
+      state Note: Bajo consumo, a la espera de un cliente.
   }
   
-  state Conectado {
-      [*] --> EsperandoDatos
-      EsperandoDatos --> EsperandoDatos : Monitoreo Periódico de Batería
-      state Note: Esperando Comandos, Matriz Apagada
+  state Esperando_Comando {
+      [*] --> Monitoreando_Bateria
+      Monitoreando_Bateria --> Monitoreando_Bateria : Ejecuta Tarea de Monitoreo
+      state Note: Pines en LOW, esperando comando.
   }
   
   state Multiplexando {
-      [*] --> Scanning
-      Scanning --> Scanning : Procesa el siguiente LED en la secuencia
-      state Note: Ciclo Activo de Encendido/Apagado de Filas
+      [*] --> Ciclo_Activo
+      Ciclo_Activo --> Ciclo_Activo : Recorre Fila por Fila (updateLEDs)
+      state Note: Alta Actividad de I/O para alimentar los LEDs.
   }

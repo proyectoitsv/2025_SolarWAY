@@ -1,27 +1,22 @@
 flowchart TD
-    A[Inicio: App Web Cargada] --> B{¿Web Bluetooth Soportado?};
+    A[Inicio: App Web] --> B{¿Conexión BLE Activa?};
 
-    B -- No --> C[Mostrar ERROR: Web Bluetooth NO SOPORTADO];
-    B -- Sí --> D[Usuario inicia Conexión Bluetooth];
+    B -- No --> C[Solicitar Conexión a ESP32];
+    C --> D{Conexión Exitosa?};
+    D -- No --> C;
+    D -- Sí --> E[Habilitar Controles de Matriz];
 
-    D --> E[AppWeb: Solicita dispositivo BLE];
-    E --> F{Dispositivo ESP32 Conectado?};
+    E --> F[Esperar Interacción de Usuario];
+    F --> G[Usuario Modifica Estado de LED];
 
-    F -- No/Cancelado --> D;
-    F -- Sí --> G[AppWeb: Encuentra Servicio y Característica de LEDs];
+    G --> H[App: Empaquetar 22 Estados en 3 bytes];
+    H --> I[App: Transmitir 3 bytes por Característica BLE];
 
-    G --> H[Conexión Establecida: Controles Habilitados];
+    I --> J[ESP32: Recibir y Desempaquetar Datos];
+    J --> K{¿Algún LED Encendido?};
 
-    H --> I[Usuario selecciona estado de LED];
-    I --> J[AppWeb: Empaquetar estado de 22 LEDs en 3 bytes];
-    J --> K[AppWeb: Transmitir 3 bytes a ESP32 vía BLE];
+    K -- Sí --> L[ESP32: Iniciar Ciclo de Multiplexación];
+    K -- No --> M[ESP32: Apagar Pines de Control];
 
-    K --> L{ESP32 recibe 3 bytes};
-    L --> M[ESP32: Desempaquetar y Actualizar Matriz de Estado];
-    M --> N{¿Al menos un LED Activo?};
-
-    N -- Sí --> O[ESP32: Activar y Ejecutar Multiplexación];
-    N -- No --> P[ESP32: Apagar LEDs y Desactivar Multiplexación];
-
-    O --> H;
-    P --> H;
+    L --> F;
+    M --> F;
