@@ -19,9 +19,9 @@ graph TD
     AppWeb --> controlMasivo
     AppWeb --> visualizarRegistro
     
-    cambiarEstadoLED --> ESP32 : <<write>> Nuevo Estado LED (3 bytes)
-    controlMasivo --> ESP32 : <<write>> Nuevo Estado (3 bytes)
+    cambiarEstadoLED -->|WRITE Nuevo Estado LED (3 bytes)| ESP32 
+    controlMasivo -->|WRITE Nuevo Estado (3 bytes)| ESP32 
     
-    ESP32 --> monitorearBateria : <<lee pin ADC>>
+    ESP32 -->|Lee pin ADC| monitorearBateria
     
-    ESP32 -.-> AppWeb : Lectura de Voltaje de Batería (Implícito/Por implementar)
+    ESP32 -.->|Lectura Voltaje Batería| AppWeb
