@@ -13,11 +13,8 @@ flowchart TD
     G --> H[Conexión Establecida: Controles Habilitados];
 
     H --> I[Usuario selecciona estado de LED];
-    I --> J[AppWeb: Empaquetar estado de 22 LEDs en 3 bytes];
-    J --> K[AppWeb: Transmitir 3 bytes a ESP32 vía BLE];
-
-    K --> L{ESP32 recibe 3 bytes};
-    L --> M[ESP32: Desempaquetar y Actualizar Matriz de Estado];
+    
+    I --> M[ESP32: Actualizar Matriz de Estado];
     M --> N{¿Al menos un LED Activo?};
 
     N -- Sí --> O[ESP32: Activar y Ejecutar Multiplexación];
