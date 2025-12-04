@@ -1,13 +1,27 @@
 flowchart TD
-    A[Inicio] --> B[Instalación de paneles en la cancha]
-    B --> C[Conexión de paneles solares a módulos reguladores de tensión]
-    C --> D[Conexión de módulos a los LEDs]
-    D --> E{¿Es necesario cambiar de cancha?}
+    A[Inicio: App Web Cargada] --> B{¿Web Bluetooth Soportado?};
 
-    E -- No --> F[Funcionamiento con cancha actual]
-    F --> E
+    B -- No --> C[Mostrar ERROR: Web Bluetooth NO SOPORTADO];
+    B -- Sí --> D[Usuario hace click en Conectar Bluetooth];
 
-    E -- Sí --> H[Interfaz de control]
-    H --> I[Selección de cancha]
-    I --> J[Envío de comandos a módulos de control de LEDs]
-    J --> E
+    D --> E[AppWeb: navigator.bluetooth.requestDevice()];
+    E --> F{Dispositivo BLE (ESP32) Seleccionado y Conectado?};
+
+    F -- No/Cancelado --> D;
+    F -- Sí --> G[AppWeb: Obtener Servicio/Característica LED];
+
+    G --> H[Conexión Éxitosa: Controles Habilitados];
+
+    H --> I[Usuario selecciona LED [r][c]];
+    I --> J[AppWeb: Empaquetar 22 estados en 3 bytes];
+    J --> K[AppWeb: Enviar 3 bytes a Característica BLE (writeValueWithoutResponse)];
+
+    K --> L{ESP32 recibe 3 bytes};
+    L --> M[ESP32: Desempaquetar 3 bytes a Matriz 2x11];
+    M --> N{¿Al menos un LED Activo?};
+
+    N -- Sí --> O[ESP32: Activar Multiplexación (updateLEDs())];
+    N -- No --> P[ESP32: Desactivar Multiplexación (setAllPinsLow())];
+
+    O --> H;
+    P --> H;
