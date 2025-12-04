@@ -5,34 +5,34 @@ stateDiagram
   
   [*] --> Desconectado: Inicio/Fallo de Energía
   
-  Desconectado --> Conectado: Enlace BLE Establecido
+  Desconectado --> Conectado: Enlace Inalámbrico Establecido
   
   Conectado --> Eleccion_de_Accion: Inicio de Operación
   
-  Eleccion_de_Accion --> Multiplexando: Comando Recibido (LEDs ON)
-  Eleccion_de_Accion --> Esperando_Comando: Comando Recibido (LEDs OFF)
+  Eleccion_de_Accion --> Multiplexando: Comando Recibido (Luces ON)
+  Eleccion_de_Accion --> Esperando_Comando: Comando Recibido (Luces OFF)
   
   Esperando_Comando --> Multiplexando: Nuevo Comando ON
   Multiplexando --> Esperando_Comando: Comando OFF Recibido
   
-  Conectado --> Desconectado: Conexión BLE Perdida
-  Esperando_Comando --> Desconectado: Conexión BLE Perdida
-  Multiplexando --> Desconectado: Conexión BLE Perdida
+  Conectado --> Desconectado: Enlace Inalámbrico Perdido
+  Esperando_Comando --> Desconectado: Enlace Inalámbrico Perdido
+  Multiplexando --> Desconectado: Enlace Inalámbrico Perdido
   
   state Desconectado {
-      [*] --> Publicidad_BLE
-      Publicidad_BLE --> Publicidad_BLE : Ciclo de Anuncio
-      state Note: Bajo consumo, a la espera de un cliente.
+      [*] --> Publicidad_Inalámbrica
+      Publicidad_Inalámbrica --> Publicidad_Inalámbrica : Ciclo de Anuncio
+      state Note: A la espera de un cliente para enlazarse.
   }
   
   state Esperando_Comando {
       [*] --> Monitoreando_Bateria
-      Monitoreando_Bateria --> Monitoreando_Bateria : Ejecuta Tarea de Monitoreo
-      state Note: Pines en LOW, esperando comando.
+      Monitoreando_Bateria --> Monitoreando_Bateria : Ejecuta Tarea de Medición de Voltaje
+      state Note: Matriz apagada, esperando instrucción.
   }
   
   state Multiplexando {
       [*] --> Ciclo_Activo
-      Ciclo_Activo --> Ciclo_Activo : Recorre Fila por Fila (updateLEDs)
-      state Note: Alta Actividad de I/O para alimentar los LEDs.
+      Ciclo_Activo --> Ciclo_Activo : Recorre Fila por Fila para mantener la iluminación
+      state Note: Alta Actividad de I/O para alimentar las luces.
   }

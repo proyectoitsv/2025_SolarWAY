@@ -1,22 +1,21 @@
 flowchart TD
-    A[Inicio: App Web] --> B{¿Conexión BLE Activa?};
+    A[Inicio de la Operación] --> B{¿Conexión Inalámbrica Activa?};
 
-    B -- No --> C[Solicitar Conexión a ESP32];
-    C --> D{Conexión Exitosa?};
+    B -- No --> C[Iniciar Búsqueda de Dispositivo y Enlace];
+    C --> D{Enlace Establecido?};
     D -- No --> C;
-    D -- Sí --> E[Habilitar Controles de Matriz];
+    D -- Sí --> E[Controles de Matriz Habilitados];
 
-    E --> F[Esperar Interacción de Usuario];
-    F --> G[Usuario Modifica Estado de LED];
+    E --> F[Usuario Ajusta Estado de Luces en la App];
 
-    G --> H[App: Empaquetar 22 Estados en 3 bytes];
-    H --> I[App: Transmitir 3 bytes por Característica BLE];
+    F --> G[App: Generar el Paquete de Comando de Estado Único];
+    G --> H[App: Transmitir el Comando Inalámbricamente al Módulo de Control];
 
-    I --> J[ESP32: Recibir y Desempaquetar Datos];
-    J --> K{¿Algún LED Encendido?};
+    H --> I[Módulo: Recibir y Decodificar el Comando];
+    I --> J{¿El Comando Requiere Iluminación (1 o más Luces ON)?};
 
-    K -- Sí --> L[ESP32: Iniciar Ciclo de Multiplexación];
-    K -- No --> M[ESP32: Apagar Pines de Control];
+    J -- Sí --> K[Módulo: Activar Sistema de Control de Luces (Multiplexación Dinámica)];
+    J -- No --> L[Módulo: Apagar Salidas de Control de Matriz];
 
-    L --> F;
-    M --> F;
+    K --> E;
+    L --> E;

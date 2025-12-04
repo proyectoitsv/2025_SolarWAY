@@ -4,13 +4,13 @@ sequenceDiagram
     participant Caracteristica_BLE
     participant Firmware_ESP32
     
-    Usuario->>AppWeb: Enviar comando de Matriz LED
+    Usuario->>AppWeb: Envío de Nuevo Estado de Matriz
     
     activate AppWeb
-    AppWeb->>AppWeb: 1. Actualizar estado interno de 22 LEDs
-    AppWeb->>AppWeb: 2. Codificar estado en un paquete de 3 bytes
+    AppWeb->>AppWeb: 1. Actualizar estado interno de las luces
+    AppWeb->>AppWeb: 2. Codificar estado en un único paquete de datos
     
-    AppWeb->>Caracteristica_BLE: WRITE_CMD (3 bytes)
+    AppWeb->>Caracteristica_BLE: Comando de Escritura
     deactivate AppWeb
     
     activate Caracteristica_BLE
@@ -18,13 +18,13 @@ sequenceDiagram
     deactivate Caracteristica_BLE
     
     activate Firmware_ESP32
-    Firmware_ESP32->>Firmware_ESP32: 1. Decodificar el paquete de 3 bytes
-    Firmware_ESP32->>Firmware_ESP32: 2. Actualizar Matriz de Control (ledMatrix)
-    Firmware_ESP32->>Firmware_ESP32: 3. Comprobar si se requiere la Multiplexación
+    Firmware_ESP32->>Firmware_ESP32: 1. Decodificar el paquete de datos
+    Firmware_ESP32->>Firmware_ESP32: 2. Actualizar Matriz de Control de Luces
+    Firmware_ESP32->>Firmware_ESP32: 3. Comprobar si se requiere la activación de luces
     
-    alt LEDs Encendidos
+    alt Luces Encendidas
         Firmware_ESP32->>Firmware_ESP32: Iniciar/Mantener Ciclo de Multiplexación
-    else LEDs Apagados
+    else Luces Apagadas
         Firmware_ESP32->>Firmware_ESP32: Apagar todos los pines de control
     end
     deactivate Firmware_ESP32

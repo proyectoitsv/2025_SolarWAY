@@ -1,13 +1,13 @@
 %%{init: {'theme': 'default'}}%%
 graph TD
     Usuario((Usuario))
-    AppWeb((Aplicación Web BLE))
-    ESP32((Controlador ESP32))
+    AppWeb((Aplicación Web Móvil))
+    ESP32((Módulo de Control Físico))
 
     %% Casos de uso
-    gestionarConexion[[Gestionar Conexión BLE]]
-    controlIndividual[[Controlar LED Individual]]
-    controlMasivo[[Controlar Todos los LEDs]]
+    gestionarConexion[[Gestionar Enlace Inalámbrico BLE]]
+    controlIndividual[[Controlar Posición de Luz Individual]]
+    controlMasivo[[Controlar Conjunto de Luces]]
     monitorearBateria[[Monitorear Nivel de Batería]]
     
     %% Relaciones
@@ -18,9 +18,9 @@ graph TD
     AppWeb --> controlMasivo
     AppWeb --> monitorearBateria
     
-    controlIndividual -->|Envío de Estado (3 bytes)| ESP32 
-    controlMasivo -->|Envío de Estado (3 bytes)| ESP32 
+    controlIndividual -->|Envío de Datos de Estado| ESP32 
+    controlMasivo -->|Envío de Datos de Estado| ESP32 
     
-    ESP32 -->|Lectura ADC| monitorearBateria
+    ESP32 -->|Mide Señal de Voltaje| monitorearBateria
     
-    ESP32 -.->|Reporte de Voltaje| AppWeb
+    ESP32 -.->|Reporte de Voltaje| AppWebs
