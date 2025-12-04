@@ -15,8 +15,8 @@ flowchart TD
 
     I --> J{Estado Requiere Luces ON?};
 
-    J -- Sí --> K[Módulo: Activar Sistema de Control de Luces (Multiplexación Dinámica)];
-    J -- No --> L[Módulo: Apagar Salidas de Control de Matriz];
+    J -- Sí --> K[Módulo: Activar Sistema de Control de Luces (Multiplexación)];
+    J -- No --> L[Módulo: Apagar Salidas de Control];
 
     K --> E;
     L --> E;
