@@ -2,26 +2,26 @@ flowchart TD
     A[Inicio: App Web Cargada] --> B{¿Web Bluetooth Soportado?};
 
     B -- No --> C[Mostrar ERROR: Web Bluetooth NO SOPORTADO];
-    B -- Sí --> D[Usuario hace click en Conectar Bluetooth];
+    B -- Sí --> D[Usuario inicia Conexión Bluetooth];
 
-    D --> E[AppWeb: navigator.bluetooth.requestDevice()];
-    E --> F{Dispositivo BLE (ESP32) Seleccionado y Conectado?};
+    D --> E[AppWeb: Solicita dispositivo BLE];
+    E --> F{Dispositivo ESP32 Conectado?};
 
     F -- No/Cancelado --> D;
-    F -- Sí --> G[AppWeb: Obtener Servicio/Característica LED];
+    F -- Sí --> G[AppWeb: Encuentra Servicio y Característica de LEDs];
 
-    G --> H[Conexión Éxitosa: Controles Habilitados];
+    G --> H[Conexión Establecida: Controles Habilitados];
 
-    H --> I[Usuario selecciona LED [r][c]];
-    I --> J[AppWeb: Empaquetar 22 estados en 3 bytes];
-    J --> K[AppWeb: Enviar 3 bytes a Característica BLE (writeValueWithoutResponse)];
+    H --> I[Usuario selecciona estado de LED];
+    I --> J[AppWeb: Empaquetar estado de 22 LEDs en 3 bytes];
+    J --> K[AppWeb: Transmitir 3 bytes a ESP32 vía BLE];
 
     K --> L{ESP32 recibe 3 bytes};
-    L --> M[ESP32: Desempaquetar 3 bytes a Matriz 2x11];
+    L --> M[ESP32: Desempaquetar y Actualizar Matriz de Estado];
     M --> N{¿Al menos un LED Activo?};
 
-    N -- Sí --> O[ESP32: Activar Multiplexación (updateLEDs())];
-    N -- No --> P[ESP32: Desactivar Multiplexación (setAllPinsLow())];
+    N -- Sí --> O[ESP32: Activar y Ejecutar Multiplexación];
+    N -- No --> P[ESP32: Apagar LEDs y Desactivar Multiplexación];
 
     O --> H;
     P --> H;
