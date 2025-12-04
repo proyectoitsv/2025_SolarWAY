@@ -1,16 +1,30 @@
 sequenceDiagram
     actor Usuario
-    participant App
-    participant Controlador
-    participant PanelesSolares
-    participant LucesLED
-
-    Usuario->>App: Abre la aplicación
-    Usuario->>App: Selecciona tipo de cancha
-    App->>Controlador: Enviar tipo de cancha
-    Controlador->>PanelesSolares: Consultar energía disponible
-    PanelesSolares-->>Controlador: Energía suficiente
-    Controlador->>LucesLED: Activar patrón de cancha seleccionada
-    LucesLED-->>Controlador: Confirmación de encendido
-    Controlador-->>App: Confirmación de activación
-    App-->>Usuario: Cancha configurada correctamente
+    participant AppWeb
+    participant ESP32_Caracteristica
+    participant ESP32_Firmware
+    
+    Usuario->>AppWeb: Clic en LED [r][c]
+    
+    activate AppWeb
+    AppWeb->>AppWeb: 1. toggleLED([r][c]) (Actualiza estado local)
+    AppWeb->>AppWeb: 2. packLEDState() (Genera el buffer de 3 bytes)
+    
+    AppWeb->>ESP32_Caracteristica: writeValueWithoutResponse(3 bytes)
+    deactivate AppWeb
+    
+    activate ESP32_Caracteristica
+    ESP32_Caracteristica->>ESP32_Firmware: onWrite(3 bytes de datos)
+    deactivate ESP32_Caracteristica
+    
+    activate ESP32_Firmware
+    ESP32_Firmware->>ESP32_Firmware: 1. Desempaquetar 3 bytes
+    ESP32_Firmware->>ESP32_Firmware: 2. Actualizar ledMatrix[2x11]
+    ESP32_Firmware->>ESP32_Firmware: 3. Decidir shouldMultiplex (basado en conteo de ON)
+    
+    alt LED(s) Activo(s)
+        ESP32_Firmware->>ESP32_Firmware: updateLEDs() (Loop de Multiplexación)
+    else Todos Apagados
+        ESP32_Firmware->>ESP32_Firmware: setAllPinsLow() (Desactivar MUX)
+    end
+    deactivate ESP32_Firmware
